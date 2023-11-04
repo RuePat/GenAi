@@ -22,7 +22,22 @@ from bson import ObjectId
 import gridfs
 import io
 
-# import snowflake.connector
+# Establish a connection to the MongoDB server
+client = MongoClient('localhost', 27017)
+
+# Create or access a database called 'sample_database'
+db = client['sample_database']
+
+# Create or access a collection called 'users'
+collection = db['users']
+
+# Sample data to insert into the collection
+users = [
+    {"AudioPath": "/Users/sveerisetti/Desktop/Hackathon/Sample/similo_beta2-main/audio_files_dir/NN_Video.mp3", "FileType": "mp3", "DateOfUpload": '2021-01-01', "Format": 10, "Length": "This is a transcript summary", "Link":"Link"},
+]
+
+# Insert the data into the collection
+collection.insert_many(users)
 
 # MongoDB Database Fetching Functions
 def get_data():
@@ -98,7 +113,6 @@ elif selected == "Audio Upload/History":
 
 elif selected == "MongoDB Data Viewer":
     st.title('MongoDB Data Viewer')
-
     # Fetch data from the database
     data = get_data()
     # Check if the details of a specific file need to be shown
@@ -114,7 +128,4 @@ elif selected == "MongoDB Data Viewer":
             # Generate links for the details of each audio file
             data['Link'] = data.apply(lambda row: f"<a href='?audio_id={row['_id']}' target='_blank'>View Details</a>", axis=1)
             st.write(data[['AudioPath', 'DateOfUpload', 'Format', 'Length', 'Link']].to_html(escape=False), unsafe_allow_html=True)
-
-# You would place the rest of your existing Streamlit application code here.
-# Make sure to properly close any if statements or other control flow blocks.
 
