@@ -95,7 +95,7 @@ st.markdown("""
 
 # Sidebar for navigation
 with st.sidebar:
-    selected = option_menu('Company', ["Audio Upload/History", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'], 
+    selected = option_menu('Company', ["Audio Upload", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'], 
         icons=['play-btn', 'search', 'info-circle', 'intersect'], default_index=0)
     lottie = load_lottiefile("similo3.json")
     st_lottie(lottie, key='loc')
@@ -104,7 +104,7 @@ with st.sidebar:
 if selected == "Intro":
     # Your existing Intro page code
     pass
-elif selected == "Audio Upload/History":
+elif selected == "Audio Upload":
      # File uploader
     uploaded_file = st.file_uploader("Choose an MP3 or MP4 file", type=["mp3", "mp4"])
     if uploaded_file is not None:
@@ -128,4 +128,3 @@ elif selected == "MongoDB Data Viewer":
             # Generate links for the details of each audio file
             data['Link'] = data.apply(lambda row: f"<a href='?audio_id={row['_id']}' target='_blank'>View Details</a>", axis=1)
             st.write(data[['AudioPath', 'DateOfUpload', 'Format', 'Length', 'Link']].to_html(escape=False), unsafe_allow_html=True)
-
