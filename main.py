@@ -1,26 +1,9 @@
 import streamlit as st
 import pandas as pd
 from pymongo import MongoClient
-from urllib.request import urlopen
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics.pairwise import euclidean_distances
-import plotly.express as px
-import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
-import json
-import requests
 from streamlit_lottie import st_lottie
-import pydeck as pdk
-import streamlit as st
-import pandas as pd
-from pymongo import MongoClient
-from moviepy.editor import VideoFileClip
-from streamlit_option_menu import option_menu
-from mutagen.mp3 import MP3
-from bson import ObjectId
-import gridfs
-import io
+import json
 
 # Establish a connection to the MongoDB server
 client = MongoClient('localhost', 27017)
@@ -31,29 +14,24 @@ db = client['sample_database']
 # Create or access a collection called 'users'
 collection = db['users']
 
-# Sample data to insert into the collection
-users = [
-    {"AudioPath": "/Users/sveerisetti/Desktop/Hackathon/Sample/similo_beta2-main/audio_files_dir/NN_Video.mp3", "FileType": "mp3", "DateOfUpload": '2021-01-01', "Format": 10, "Length": "This is a transcript summary", "Link":"Link"},
-]
-
-# Insert the data into the collection
-collection.insert_many(users)
+# Insert data into the collection if not already present (for demonstration purposes)
+if collection.count_documents({}) == 0:
+    users = [
+        {"AudioPath": "/path/to/audio.mp3", "FileType": "mp3", "DateOfUpload": '2021-01-01', "Format": 10, "Length": "This is a transcript summary", "Link":"Link"},
+    ]
+    collection.insert_many(users)
 
 # MongoDB Database Fetching Functions
 def get_data():
     client = MongoClient('localhost', 27017)
-    db = client['sample_database']  # Replace with your actual database name
-    collection = db['users']  # Replace with your actual collection name
+    db = client['sample_database']
+    collection = db['users']
     data = pd.DataFrame(list(collection.find()))
 
-    # If data is empty, return it before trying to access '_id'
     if data.empty:
         return data
 
-    # Convert ObjectId to string for compatibility
     data['_id'] = data['_id'].astype(str)
-    
-    # Optional: Remove duplicates if you want to keep only unique AudioPath entries
     data = data.drop_duplicates(subset='AudioPath')
     
     return data
@@ -78,12 +56,6 @@ def load_lottiefile(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
 
-@st.cache(suppress_st_warning=True)
-def pull_clean():
-    master_zip = pd.read_csv('MASTER_ZIP.csv', dtype={'ZCTA5': str})
-    master_city = pd.read_csv('MASTER_CITY.csv', dtype={'ZCTA5': str})
-    return master_zip, master_city
-
 # Add additional CSS styles
 st.markdown("""
 <style>
@@ -93,38 +65,40 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Check for query parameters to set the selected page
+query_params = st.experimental_get_query_params()
+
 # Sidebar for navigation
 with st.sidebar:
+    # Determine the selection based on the query parameters
+    selected = query_params.get("selected", ["Audio Upload"])[0]
+    # Use the selection to set the default index for the sidebar menu
     selected = option_menu('Company', ["Audio Upload", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'], 
-        icons=['play-btn', 'search', 'info-circle', 'intersect'], default_index=0)
+        icons=['play-btn', 'search', 'info-circle', 'intersect'],
+        menu_icon="cast", default_index=["Audio Upload", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'].index(selected))
+    
     lottie = load_lottiefile("similo3.json")
     st_lottie(lottie, key='loc')
 
 # Pages
-if selected == "Intro":
-    # Your existing Intro page code
-    pass
+if selected == "MongoDB Data Viewer":
+    st.title('MongoDB Data Viewer')
+    data = get_data()
+    if 'audio_id' in query_params:
+        audio_id = query_params['audio_id'][0]
+        row = data.loc[data['_id'] == audio_id].iloc[0]
+        show_audio_details(row)
+    else:
+        if not data.empty:
+            data['Link'] = data.apply(lambda row: f"<a href='/?selected=MongoDB%20Data%20Viewer&audio_id={row['_id']}'>View Details</a>", axis=1)
+            st.write(data[['AudioPath', 'DateOfUpload', 'Format', 'Length', 'Link']].to_html(escape=False), unsafe_allow_html=True)
+
 elif selected == "Audio Upload":
-     # File uploader
     uploaded_file = st.file_uploader("Choose an MP3 or MP4 file", type=["mp3", "mp4"])
     if uploaded_file is not None:
         file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type}
         st.write(file_details)
 
-elif selected == "MongoDB Data Viewer":
-    st.title('MongoDB Data Viewer')
-    # Fetch data from the database
-    data = get_data()
-    # Check if the details of a specific file need to be shown
-    query_params = st.experimental_get_query_params()
-    if 'audio_id' in query_params:
-        # Fetch the specific row
-        audio_id = query_params['audio_id'][0]
-        row = data.loc[data['_id'] == audio_id].iloc[0]
-        show_audio_details(row)
-    else:
-        # If not showing details, display the original dataframe with links
-        if not data.empty:
-            # Generate links for the details of each audio file
-            data['Link'] = data.apply(lambda row: f"<a href='?audio_id={row['_id']}' target='_blank'>View Details</a>", axis=1)
-            st.write(data[['AudioPath', 'DateOfUpload', 'Format', 'Length', 'Link']].to_html(escape=False), unsafe_allow_html=True)
+# ... [Additional pages like "Flash Cards", "Quiz", "About" would go here]
+
+# ... [Rest of your Streamlit app code]
