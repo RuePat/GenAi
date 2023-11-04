@@ -98,7 +98,3 @@ elif selected == "Audio Upload":
     if uploaded_file is not None:
         file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type}
         st.write(file_details)
-
-# ... [Additional pages like "Flash Cards", "Quiz", "About" would go here]
-
-# ... [Rest of your Streamlit app code]
