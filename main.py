@@ -4,7 +4,25 @@ from pymongo import MongoClient
 from streamlit_option_menu import option_menu
 from streamlit_lottie import st_lottie
 import json
+import os
+import openai
 
+# Set OpenAI API Key (use an environment variable for security)
+os.environ['OPENAI_API_KEY'] = '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'
+
+# OpenAI Whisper model transcription functions
+def transcribe_audio(audio_file):
+    # Set OpenAI API Key
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+    # Transcribe the audio file
+    try:
+        transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        # Convert the transcript to text
+        text = dict(transcript)['text']
+        return text
+    except Exception as e:
+        st.error(f"An error occurred while transcribing the audio: {e}")
+        return None
 # Establish a connection to the MongoDB server
 client = MongoClient('localhost', 27017)
 
@@ -70,6 +88,7 @@ query_params = st.experimental_get_query_params()
 
 # Sidebar for navigation
 with st.sidebar:
+    st.image("logo.png", use_column_width=True)
     # Determine the selection based on the query parameters
     selected = query_params.get("selected", ["Audio Upload"])[0]
     # Use the selection to set the default index for the sidebar menu
@@ -98,3 +117,9 @@ elif selected == "Audio Upload":
     if uploaded_file is not None:
         file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type}
         st.write(file_details)
+        # Transcribe the audio file using OpenAI's API
+        transcript_text = transcribe_audio(uploaded_file)
+        
+        if transcript_text:
+            # Display the transcription
+            st.text_area("Transcription Result:", transcript_text, height=250)
