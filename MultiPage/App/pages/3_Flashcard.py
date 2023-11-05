@@ -16,12 +16,18 @@ if 'flashcard_index' not in st.session_state:
     st.session_state.flashcard_index = 0
     st.session_state.show_answer = False
     st.session_state.review_flashcards = set()
-    st.session_state.show_only_review = False
-    st.session_state.show_review_options = False
+    st.session_state.iterate_review = False
 
 # Add a "Next" button to cycle through flashcards
 if st.button("Next"):
-    st.session_state.flashcard_index = (st.session_state.flashcard_index + 1) % len(flashcards)
+    if st.session_state.iterate_review:
+        review_flashcards = [i for i, flashcard in enumerate(flashcards) if flashcard['question'] in st.session_state.review_flashcards]
+        if review_flashcards:
+            st.session_state.flashcard_index = (st.session_state.flashcard_index + 1) % len(review_flashcards)
+        else:
+            st.session_state.flashcard_index = (st.session_state.flashcard_index + 1) % len(flashcards)
+    else:
+        st.session_state.flashcard_index = (st.session_state.flashcard_index + 1) % len(flashcards)
     st.session_state.show_answer = False  # Reset show_answer flag
 
 # Define CSS to make the flashcard box a square and center text vertically
@@ -44,20 +50,17 @@ custom_css = """
 """
 st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
-# Checkbox at the top to show only flashcards marked for review
-st.session_state.show_only_review = st.checkbox("Show only flashcards marked for review")
+# Checkbox to automatically iterate over review cards
+st.session_state.iterate_review = st.checkbox("Iterate over review cards")
 
 # Display the flashcard (question or answer)
 st.write("Question:")
 current_flashcard = flashcards[st.session_state.flashcard_index]
+
 if st.session_state.show_answer:
     st.markdown(f"<div class='flashcard'>{current_flashcard['answer']}</div>", unsafe_allow_html=True)
 else:
-    if st.session_state.show_only_review and current_flashcard['question'] not in st.session_state.review_flashcards:
-        # Skip displaying non-review flashcards if "Show only flashcards marked for review" is selected
-        st.markdown("<div class='flashcard'>No flashcards marked for review</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div class='flashcard'>{current_flashcard['question']}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='flashcard'>{current_flashcard['question']}</div>", unsafe_allow_html=True)
 
 # Create "Flip," "Add to Review," and "Remove from Review" buttons
 if st.button("Flip"):
