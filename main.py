@@ -35,7 +35,7 @@ collection = db['users']
 # Insert data into the collection if not already present (for demonstration purposes)
 if collection.count_documents({}) == 0:
     users = [
-        {"AudioPath": "/path/to/audio.mp3", "FileType": "mp3", "DateOfUpload": '2021-01-01', "Format": 10, "Length": "This is a transcript summary", "Link":"Link"},
+        {"AudioPath": "/Users/sveerisetti/Desktop/Hackathon/Sample/similo_beta2-main/audio_files_dir/john.mp4", "FileType": "mp3", "DateOfUpload": '2021-01-01', "Format": 10, "Length": "This is a transcript summary", "Link":"Link"},
     ]
     collection.insert_many(users)
 
@@ -61,6 +61,81 @@ def show_audio_details(row):
     st.write(f"Short Answer: {row.get('ShortAnswer', '')}")
     st.write(f"TrueFalse: {row.get('TrueFalse', '')}")
 
+
+team_members = [
+    {
+        "name": "Suneel",
+        "description": "Degree",
+        "image_path": "suneel.png"  # The filename of Alice's headshot image in the same directory
+    },
+    {
+        "name": "Rucha",
+        "description": "Degree",
+        "image_path": "rucha.png"  # The filename of Bob's headshot image
+    },
+    {
+        "name": "Aafra",
+        "description": "Degree",
+        "image_path": "Aafra.png"  # The filename of Bob's headshot image
+    },
+    {
+        "name": "Sri",
+        "description": "Degree",
+        "image_path": "sri.png"  # The filename of Bob's headshot image
+    }
+]
+
+# Displaying team member headshots and descriptions
+def display_team():
+    cols = st.columns(len(team_members))  # Create a column for each team member
+    for idx, member in enumerate(team_members):
+        with cols[idx]:
+            # Display the image
+            st.image(member["image_path"], width=300)  # Adjust the width as needed
+            # Display the name and description below the image
+            st.write(member["name"])
+            st.write(member["description"])
+
+def read_text_from_file(file_path):
+    with open(file_path, "r") as file:
+        text = file.read()
+    return text
+
+def generate_document_summary(document):
+    chunks = [
+        document[i : i + 3000] for i in range(0, len(document), 3000)
+    ]  # Split document into chunks of 3000 characters
+    summaries = []
+
+    for chunk in chunks:
+        response = openai.Completion.create(
+            engine="text-davinci-003",  # You can use a different engine if desired
+            prompt=f"Summarize the following text:\n{chunk}\n\nSummary:",
+            max_tokens=200,  # Set the desired length of the summary
+            n=1,
+            stop=None,
+        )
+        summary = response.choices[0].text.strip()
+        summaries.append(summary)
+
+    return " ".join(summaries)
+
+# New Streamlit function to display summarized text
+def show_summary(text):
+    summary = generate_document_summary(text)
+    st.text_area("Summary Result:", summary, height=150)
+    # Convert summary to a string to be able to download it
+    summary_string = str(summary)
+    st.download_button(
+        label="Download Summary",
+        data=summary_string,
+        file_name="summary.txt",
+        mime="text/plain"
+    )
+    # Save the transcript summary to a .txt file
+    with open("transcript_summary.txt", "w") as file:
+        file.write(summary)
+
 # Set page config
 st.set_page_config(
     page_title="SimiLo",
@@ -69,7 +144,7 @@ st.set_page_config(
 )
 
 # Define functions for lottie
-@st.cache(allow_output_mutation=True)
+@st.cache_data
 def load_lottiefile(filepath: str):
     with open(filepath, "r") as f:
         return json.load(f)
@@ -92,7 +167,7 @@ with st.sidebar:
     # Determine the selection based on the query parameters
     selected = query_params.get("selected", ["Audio Upload"])[0]
     # Use the selection to set the default index for the sidebar menu
-    selected = option_menu('Company', ["Audio Upload", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'], 
+    selected = option_menu('Tab Selection', ["Audio Upload", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'], 
         icons=['play-btn', 'search', 'info-circle', 'intersect'],
         menu_icon="cast", default_index=["Audio Upload", 'Flash Cards', 'Quiz', 'About', 'MongoDB Data Viewer'].index(selected))
     
@@ -123,3 +198,20 @@ elif selected == "Audio Upload":
         if transcript_text:
             # Display the transcription
             st.text_area("Transcription Result:", transcript_text, height=250)
+            # Call the summary display function
+            show_summary(transcript_text)
+            # Convert transcript to a string to be able to download it
+            transcript_string = str(transcript_text)
+            # Create a download button and specify the method to download the file
+            st.download_button(
+                label="Download Transcript",
+                data=transcript_string,
+                file_name="transcript.txt",
+                mime="text/plain"
+            )
+
+# Usage in your Streamlit app
+if selected == "About":
+    st.title('About Us')
+    display_team()
+    # ... the rest of your code for the "About" page
