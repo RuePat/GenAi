@@ -6,7 +6,7 @@ import streamlit_tags as st_tags
 import random
 
 def show_text(text, name):
-    key = random.random()
+    key = f"{name}_text_area"
     st.text_area(f"{name.capitalize()}:", text, height=150, key=key)
     # Convert summary to a string to be able to download it
 
