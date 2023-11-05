@@ -117,10 +117,6 @@ elif selected == "Transcribe Lectures":
 
         st.success('File uploaded and transcribed successfully!')
 
-        show_text(record['transcript'], 'transcript')
-
-        show_text(record['summary'], 'summary')
-
         latest_record = collection.find_one(sort=[("_id", pymongo.DESCENDING)])
 
         gen_navbar(latest_record)
