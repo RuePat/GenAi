@@ -6,6 +6,7 @@ from streamlit_lottie import st_lottie
 import json
 import os
 import openai
+from datetime import datetime
 
 # Set OpenAI API Key (use an environment variable for security)
 os.environ['OPENAI_API_KEY'] = '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'
@@ -190,25 +191,44 @@ if selected == "MongoDB Data Viewer":
 elif selected == "Audio Upload":
     uploaded_file = st.file_uploader("Choose an MP3 or MP4 file", type=["mp3", "mp4"])
     if uploaded_file is not None:
-        file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type}
+        # Save the uploaded file temporarily
+        with open(uploaded_file.name, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        # Display the file details
+        file_details = {
+            "Filename": uploaded_file.name,
+            "FileType": uploaded_file.type,
+            "DateOfUpload": datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Use current time as upload date
+        }
         st.write(file_details)
+        
         # Transcribe the audio file using OpenAI's API
         transcript_text = transcribe_audio(uploaded_file)
         
         if transcript_text:
             # Display the transcription
             st.text_area("Transcription Result:", transcript_text, height=250)
-            # Call the summary display function
-            show_summary(transcript_text)
-            # Convert transcript to a string to be able to download it
-            transcript_string = str(transcript_text)
-            # Create a download button and specify the method to download the file
-            st.download_button(
-                label="Download Transcript",
-                data=transcript_string,
-                file_name="transcript.txt",
-                mime="text/plain"
-            )
+            
+            # Generate a summary if needed
+            # summary_text = generate_document_summary(transcript_text)
+            # st.text_area("Summary Result:", summary_text, height=150)
+            
+            # Insert the file details and transcription into MongoDB
+            audio_data = {
+                "AudioPath": f"/Users/sveerisetti/Desktop/Hackathon/Sample/similo_beta2-main/audio_files_dir/{uploaded_file.name}",
+                "FileType": uploaded_file.type,
+                "DateOfUpload": file_details["DateOfUpload"],
+                "Transcription": transcript_text,
+                # "Summary": summary_text,  # Uncomment if you want to store summary
+            }
+            collection.insert_one(audio_data)
+            
+            # Provide feedback to the user
+            st.success('File uploaded and transcribed successfully!')
+            
+            # Clean up the temporary file if needed
+            # os.remove(uploaded_file.name)
 
 # Usage in your Streamlit app
 if selected == "About":
