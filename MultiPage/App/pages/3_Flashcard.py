@@ -30,7 +30,7 @@ if st.button("Next"):
         st.session_state.flashcard_index = (st.session_state.flashcard_index + 1) % len(flashcards)
     st.session_state.show_answer = False  # Reset show_answer flag
 
-# Define CSS to make the flashcard box a square and center text vertically
+# Define CSS to style the flashcard box
 custom_css = """
 .flashcard {
     background-color: #B79100;
@@ -44,22 +44,26 @@ custom_css = """
     width: 300px; /* Set the width to create a square */
     height: 300px; /* Set the height to match the width */
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 """
+
 st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
 # Checkbox to automatically iterate over review cards
 st.session_state.iterate_review = st.checkbox("Iterate over review cards")
 
 # Display the flashcard (question or answer)
-st.write("Question:")
+# st.write("Question:")
 current_flashcard = flashcards[st.session_state.flashcard_index]
 
 if st.session_state.show_answer:
+    st.write("Answer:")
     st.markdown(f"<div class='flashcard'>{current_flashcard['answer']}</div>", unsafe_allow_html=True)
 else:
+    st.write("Question:")
     st.markdown(f"<div class='flashcard'>{current_flashcard['question']}</div>", unsafe_allow_html=True)
 
 # Create "Flip," "Add to Review," and "Remove from Review" buttons
