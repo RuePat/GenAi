@@ -10,7 +10,7 @@ import pymongo
 from helper import *
 
 
-os.environ['OPENAI_API_KEY'] = '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'
+os.environ['OPENAI_API_KEY'] = ''
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
