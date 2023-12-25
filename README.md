@@ -17,9 +17,11 @@ Our platform empowers users in their learning journey, starting with seamless vi
 **Past Lecture Archive:** Your journey doesn't end when the video does. Our tool helps you organize and access past lectures and notes efficiently. It's a virtual library at your fingertips, ensuring that knowledge is readily available whenever you need it.
 
 ### How we built it?
-ML: We used OpenAI's DaVinci model, a state-of-the-art natural language processing powerhouse, to transmute video content into meaningful text. For live transcription, we integrated Whisper, to ensure accurate and real-time conversion of spoken words into written text.
-Database: Data storage was efficiently managed using MongoDB, guaranteeing the security and accessibility of user-generated content.
-UI: We used Streamlit, a user-friendly interface development platform. This allowed us to provide users with a straightforward, visually appealing, and highly functional environment in which they could interact with our tool.
+**ML:** We used OpenAI's DaVinci model, a state-of-the-art natural language processing powerhouse, to transmute video content into meaningful text. For live transcription, we integrated Whisper, to ensure accurate and real-time conversion of spoken words into written text.
+
+**Database:** Data storage was efficiently managed using MongoDB, guaranteeing the security and accessibility of user-generated content.
+
+**UI:** We used Streamlit, a user-friendly interface development platform. This allowed us to provide users with a straightforward, visually appealing, and highly functional environment in which they could interact with our tool.
 
 ### Challenges
 We experienced difficulties in achieving live transcription using Whisper, but we're currently improving this by integrating the Azure Speech-to-Text REST API. We also encountered issues with the API rate limit, hindering faster processing of videos and audios. Due to time limitations, we couldn't include document and video combined summarization, but it remains a priority feature for future development.
