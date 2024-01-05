@@ -1,7 +1,7 @@
 import openai
 import json
 
-openai.api_key = "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"
+openai.api_key = ""
 
 def get_completion(prompt, engine = 'text-davinci-003'):
     response = openai.Completion.create(
