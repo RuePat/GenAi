@@ -4,7 +4,7 @@ import streamlit as st
 correct_username = "user"
 correct_password = "password"
 
-st.sidebar.image("C:/Users/patil/OneDrive/Desktop/GenAi/MyApp/logo.png", use_column_width=True)
+st.sidebar.image("/GenAi/MyApp/logo.png", use_column_width=True)
 
 # Streamlit app title
 st.title("Welcome to Lumoscribe")
